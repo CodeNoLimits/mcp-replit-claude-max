@@ -1,0 +1,124 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install server dependencies
+      run: cd server && npm ci
+    
+    - name: Install client dependencies
+      run: cd client && npm ci
+    
+    - name: Lint server
+      run: cd server && npm run lint
+    
+    - name: Lint client
+      run: cd client && npm run lint
+    
+    - name: Type check server
+      run: cd server && npx tsc --noEmit
+    
+    - name: Type check client
+      run: cd client && npm run type-check
+    
+    - name: Test server
+      run: cd server && npm test
+    
+    - name: Test client
+      run: cd client && npm test
+    
+    - name: Build server
+      run: cd server && npm run build
+    
+    - name: Build client
+      run: cd client && npm run build
+
+  docker:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Login to DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+    
+    - name: Build and push server
+      uses: docker/build-push-action@v5
+      with:
+        context: ./server
+        push: true
+        tags: codenolimits/mcp-replit-claude-server:latest
+    
+    - name: Build and push client
+      uses: docker/build-push-action@v5
+      with:
+        context: ./client
+        push: true
+        tags: codenolimits/mcp-replit-claude-client:latest
+
+  security:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Run security audit
+      run: |
+        cd server && npm audit --audit-level=high
+        cd ../client && npm audit --audit-level=high
+    
+    - name: Run Snyk security scan
+      uses: snyk/actions/node@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --severity-threshold=high
+
+  deploy:
+    needs: [test, docker]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to staging
+      run: |
+        echo "Deploying to staging environment..."
+        # Add your deployment scripts here
+    
+    - name: Health check
+      run: |
+        echo "Running health checks..."
+        # Add health check scripts here
