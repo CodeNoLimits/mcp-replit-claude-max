@@ -8,9 +8,10 @@
   "license": "MIT",
   "scripts": {
     "setup": "chmod +x scripts/setup-claude-max.sh && ./scripts/setup-claude-max.sh",
-    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev": "./scripts/start-dev.sh",
     "dev:server": "cd server && npm run dev",
     "dev:client": "cd client && npm run dev",
+    "stop": "./scripts/stop-dev.sh",
     "check-claude": "claude --version && echo 'Claude Code is ready!'",
     "build": "cd server && npm run build && cd ../client && npm run build",
     "install-all": "npm install && cd server && npm install && cd ../client && npm install",

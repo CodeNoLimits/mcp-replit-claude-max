@@ -116,7 +116,19 @@ export class ProjectManager extends EventEmitter {
       
       // Create and start Docker container
       const container = await this.createContainer(projectId, projectPath);
-      await container.start();
+      try {
+        await container.start();
+        logger.info(`✅ Docker container started: ${container.id}`);
+      } catch (startError) {
+        logger.error(`❌ Failed to start container: ${container.id}`, startError);
+        // Try to remove the container if it failed to start
+        try {
+          await container.remove();
+        } catch (removeError) {
+          logger.error('Failed to remove failed container:', removeError);
+        }
+        throw startError;
+      }
       
       projectInfo.containerId = container.id;
       projectInfo.status = 'active';
@@ -342,27 +354,35 @@ Start coding!
     
     logger.info(`🐳 Creating Docker container: ${containerName}`);
     
-    return await this.docker.createContainer({
-      Image: 'node:18-alpine',
-      name: containerName,
-      WorkingDir: '/workspace',
-      Cmd: ['tail', '-f', '/dev/null'], // Keep container running
-      HostConfig: {
-        Binds: [`${projectPath}:/workspace`],
-        AutoRemove: true,
-        Memory: 512 * 1024 * 1024, // 512MB memory limit
-        CpuShares: 512 // CPU limit
-      },
-      Env: [
-        'NODE_ENV=development',
-        `PROJECT_ID=${projectId}`,
-        'DEBIAN_FRONTEND=noninteractive'
-      ],
-      Labels: {
-        'repliclaude.project.id': projectId,
-        'repliclaude.project.type': 'development'
-      }
-    });
+    try {
+      const container = await this.docker.createContainer({
+        Image: 'node:18-alpine',
+        name: containerName,
+        WorkingDir: '/workspace',
+        Cmd: ['tail', '-f', '/dev/null'], // Keep container running
+        HostConfig: {
+          Binds: [`${projectPath}:/workspace`],
+          AutoRemove: true,
+          Memory: 512 * 1024 * 1024, // 512MB memory limit
+          CpuShares: 512 // CPU limit
+        },
+        Env: [
+          'NODE_ENV=development',
+          `PROJECT_ID=${projectId}`,
+          'DEBIAN_FRONTEND=noninteractive'
+        ],
+        Labels: {
+          'repliclaude.project.id': projectId,
+          'repliclaude.project.type': 'development'
+        }
+      });
+      
+      logger.info(`✅ Docker container created: ${container.id}`);
+      return container;
+    } catch (error) {
+      logger.error(`❌ Failed to create Docker container: ${containerName}`, error);
+      throw error;
+    }
   }
 
   /**

@@ -5,8 +5,7 @@ const nextConfig = {
   
   // Enable experimental features
   experimental: {
-    appDir: true,
-    serverActions: true,
+    // Server actions are now stable in Next.js 14+
   },
 
   // Monaco Editor configuration

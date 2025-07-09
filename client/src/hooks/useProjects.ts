@@ -1,7 +1,29 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Project } from '../types/project';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+// Try to get API URL from environment or detect from current location
+const getApiUrl = () => {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (envUrl) {
+    console.log('Using API URL from environment:', envUrl);
+    return envUrl;
+  }
+  
+  // Try to detect from current location
+  const currentPort = window.location.port;
+  if (currentPort) {
+    console.log('Frontend port detected:', currentPort);
+    const backendPort = parseInt(currentPort) - 29; // 3030 -> 3001
+    if (backendPort > 0) {
+      console.log('Calculated backend port:', backendPort);
+      return `http://localhost:${backendPort}`;
+    }
+  }
+  
+  // Default fallback
+  console.log('Using default API URL: http://localhost:3001');
+  return 'http://localhost:3001';
+};
 
 export interface UseProjectsReturn {
   projects: Project[];
@@ -10,19 +32,22 @@ export interface UseProjectsReturn {
   refetch: () => Promise<void>;
   createProject: (name: string, template?: string, description?: string) => Promise<Project>;
   deleteProject: (projectId: string) => Promise<void>;
+  apiUrl: string;
 }
 
 export const useProjects = (): UseProjectsReturn => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [apiUrl] = useState(() => getApiUrl());
 
   const fetchProjects = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
       
-      const response = await fetch(`${API_BASE_URL}/api/projects`);
+      console.log('Fetching projects from:', `${apiUrl}/api/projects`);
+      const response = await fetch(`${apiUrl}/api/projects`);
       
       if (!response.ok) {
         throw new Error(`Failed to fetch projects: ${response.statusText}`);
@@ -37,7 +62,7 @@ export const useProjects = (): UseProjectsReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [apiUrl]);
 
   const createProject = useCallback(async (
     name: string,
@@ -45,7 +70,10 @@ export const useProjects = (): UseProjectsReturn => {
     description?: string
   ): Promise<Project> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/projects`, {
+      console.log('Creating project with API URL:', apiUrl);
+      console.log('Project data:', { name, template, description });
+      
+      const response = await fetch(`${apiUrl}/api/projects`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -57,26 +85,42 @@ export const useProjects = (): UseProjectsReturn => {
         }),
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+
       if (!response.ok) {
-        throw new Error(`Failed to create project: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
+        throw new Error(`API Error ${response.status}: ${response.statusText} - ${errorText}`);
       }
 
       const data = await response.json();
+      console.log('Project created successfully:', data);
       
       // Refresh the projects list
       await fetchProjects();
       
       return data.project;
     } catch (err) {
+      console.error('Create project error:', err);
+      
+      // More specific error messages
+      if (err instanceof TypeError && err.message.includes('fetch')) {
+        const errorMessage = `Network error: Cannot connect to API at ${apiUrl}. Please check if the server is running.`;
+        setError(errorMessage);
+        throw new Error(errorMessage);
+      }
+      
       const errorMessage = err instanceof Error ? err.message : 'Failed to create project';
       setError(errorMessage);
       throw err;
     }
-  }, [fetchProjects]);
+  }, [apiUrl, fetchProjects]);
 
   const deleteProject = useCallback(async (projectId: string): Promise<void> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}`, {
+      console.log('Deleting project:', projectId);
+      const response = await fetch(`${apiUrl}/api/projects/${projectId}`, {
         method: 'DELETE',
       });
 
@@ -91,7 +135,7 @@ export const useProjects = (): UseProjectsReturn => {
       setError(errorMessage);
       throw err;
     }
-  }, [fetchProjects]);
+  }, [apiUrl, fetchProjects]);
 
   useEffect(() => {
     fetchProjects();
@@ -104,5 +148,6 @@ export const useProjects = (): UseProjectsReturn => {
     refetch: fetchProjects,
     createProject,
     deleteProject,
+    apiUrl,
   };
 };

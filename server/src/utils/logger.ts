@@ -51,17 +51,17 @@ const mainLogger = winston.createLogger({
 
 // Add rotating file transport for production
 if (process.env.NODE_ENV === 'production') {
-  const DailyRotateFile = require('winston-daily-rotate-file');
-  
-  mainLogger.add(
-    new DailyRotateFile({
-      filename: path.join(logsDir, 'application-%DATE%.log'),
-      datePattern: 'YYYY-MM-DD',
-      maxSize: '20m',
-      maxFiles: '14d',
-      format: logFormat,
-    })
-  );
+  import('winston-daily-rotate-file').then(({ default: DailyRotateFile }) => {
+    mainLogger.add(
+      new DailyRotateFile({
+        filename: path.join(logsDir, 'application-%DATE%.log'),
+        datePattern: 'YYYY-MM-DD',
+        maxSize: '20m',
+        maxFiles: '14d',
+        format: logFormat,
+      })
+    );
+  });
 }
 
 export class Logger {

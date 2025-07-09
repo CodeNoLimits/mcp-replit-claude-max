@@ -28,8 +28,23 @@ cd mcp-replit-claude-max
 # Setup automatique
 npm run setup
 
-# Démarrer l'IDE
+# Démarrer l'IDE (détection automatique des ports)
 npm run dev
+```
+
+### 🔧 Démarrage intelligent
+
+Le script `npm run dev` détecte automatiquement les ports disponibles :
+- **Détection automatique** des ports libres
+- **Pas de conflit** avec d'autres applications
+- **Ouverture automatique** du navigateur
+- **Logs détaillés** pour le débogage
+
+### 🛑 Arrêter les services
+
+```bash
+# Arrêter tous les services
+npm run stop
 ```
 
 ## 📋 Vérification Claude Code
