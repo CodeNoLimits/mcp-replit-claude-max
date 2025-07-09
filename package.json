@@ -1,0 +1,40 @@
+{
+  "name": "mcp-replit-claude-max",
+  "version": "1.0.0",
+  "description": "Replit-like IDE with Claude Code Max integration via MCP",
+  "private": true,
+  "keywords": ["mcp", "claude-code", "ide", "replit", "typescript", "react"],
+  "author": "codenolimits",
+  "license": "MIT",
+  "scripts": {
+    "setup": "chmod +x scripts/setup-claude-max.sh && ./scripts/setup-claude-max.sh",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "check-claude": "claude --version && echo 'Claude Code is ready!'",
+    "build": "cd server && npm run build && cd ../client && npm run build",
+    "install-all": "npm install && cd server && npm install && cd ../client && npm install",
+    "clean": "rm -rf server/node_modules server/dist client/node_modules client/.next shared/node_modules",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "test": "cd server && npm test && cd ../client && npm test"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "typescript": "^5.0.0"
+  },
+  "workspaces": [
+    "server",
+    "client",
+    "shared"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codenolimits/mcp-replit-claude-max"
+  }
+}
