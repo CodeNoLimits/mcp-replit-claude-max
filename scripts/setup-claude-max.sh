@@ -138,7 +138,7 @@ EOL
 # Client .env.local
 cat > client/.env.local << EOL
 NEXT_PUBLIC_API_URL=http://localhost:3001
-NEXT_PUBLIC_WS_URL=ws://localhost:3002
+NEXT_PUBLIC_WS_URL=ws://localhost:3001
 NEXT_PUBLIC_CLAUDE_CODE_ENABLED=true
 EOL
 
@@ -230,7 +230,7 @@ echo "=================================================="
 echo ""
 echo "📋 Next steps:"
 echo "1. Start the development server: npm run dev"
-echo "2. Open your browser: http://localhost:3000"
+echo "2. Open your browser: http://localhost:3030"
 echo "3. Create a new project or open existing one"
 echo "4. Click 'Start Claude Code Session' to begin coding with AI"
 echo ""

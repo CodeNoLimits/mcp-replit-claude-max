@@ -39,7 +39,7 @@ services:
       dockerfile: Dockerfile
     container_name: mcp-replit-claude-frontend
     ports:
-      - "3000:3000"
+      - "3030:3000"
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_URL=http://localhost:3001
@@ -100,7 +100,7 @@ services:
     image: grafana/grafana:latest
     container_name: mcp-replit-grafana
     ports:
-      - "3001:3000"
+      - "3040:3000"
     volumes:
       - grafana_data:/var/lib/grafana
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning

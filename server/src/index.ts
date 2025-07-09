@@ -51,7 +51,7 @@ class MCPReplicLaudeServer {
   private setupMiddleware(): void {
     // CORS configuration
     this.app.use(cors({
-      origin: process.env.CLIENT_URL || 'http://localhost:3000',
+      origin: process.env.CLIENT_URL || 'http://localhost:3030',
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization']
@@ -231,7 +231,7 @@ class MCPReplicLaudeServer {
         logger.info(`📊 Health check available at http://localhost:${this.port}/health`);
         
         if (process.env.NODE_ENV === 'development') {
-          logger.info(`🌐 Frontend URL: ${process.env.CLIENT_URL || 'http://localhost:3000'}`);
+          logger.info(`🌐 Frontend URL: ${process.env.CLIENT_URL || 'http://localhost:3030'}`);
         }
       });
 

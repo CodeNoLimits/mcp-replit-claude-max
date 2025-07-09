@@ -44,7 +44,7 @@ npm run check-claude
 
 ## 🎯 Utilisation
 
-1. **Ouvrir l'IDE**: http://localhost:3000
+1. **Ouvrir l'IDE**: http://localhost:3030
 2. **Créer un projet**: Bouton "New Project" → Choisir template
 3. **Activer Claude Code**: Panel → "Start Session"
 4. **Coder avec AI**: Utiliser les actions rapides ou chat libre
